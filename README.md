@@ -61,3 +61,19 @@ git remote add origin URL_DEL_REPO
 git push -u origin main
 ```
 Una rama por historia (`us-10-carrito`) y Pull Request para que el historial muestre a ambos integrantes.
+
+## Historias de usuario en GitHub
+Las 16 historias están en dos formatos:
+
+1. **Archivos Markdown** en `historias-de-usuario/` (una por historia) + el resumen en `BACKLOG.md`.
+2. **Issues de GitHub** (recomendado, se ve el tablero y el avance).
+
+Para crear las Issues automáticamente:
+1. Genera un token personal en GitHub → *Settings* → *Developer settings* → *Personal access tokens* → *Fine-grained tokens* → acceso a *Issues* y *Contents* de este repo.
+2. Ejecuta:
+```bat
+node crear-issues.js TU_USUARIO importachina TU_TOKEN
+```
+Crea las 7 etiquetas por rol/sprint, las 16 Issues con criterios de aceptación en checkboxes y el issue fijo del tablero Kanban.
+
+Las subtareas técnicas de cada tarjeta siguen la guía: migración, modelo, controlador, vista y prueba.

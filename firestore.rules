@@ -27,8 +27,8 @@ service cloud.firestore {
         && request.resource.data.CorreoUsuario is string;
       allow get: if esMiDoc(uid) || esAdmin();
       allow list: if esAdmin() || esVendedor();
-      // HU-03: solo admin gestiona usuarios y roles
-      allow update: if esAdmin();
+      // HU-03: solo admin gestiona usuarios y roles; el cliente edita su perfil (HU-04)
+      allow update: if esAdmin() || (esMiDoc(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['NombreUsuario', 'TelefonoUsuario', 'DireccionUsuario']));
       allow delete: if esAdmin();
     }
 

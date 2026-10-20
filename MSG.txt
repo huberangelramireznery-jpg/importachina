@@ -1,6 +1,0 @@
-Sprint 0: preparacion del proyecto ImportaChina
-- Proyecto Firebase importachina-2026 (Firestore, Authentication, Hosting)
-- Sistema web con roles administrador, vendedor y cliente
-- Modulos: catalogo, detalle, carrito, checkout, pedidos, pagos, panel y reportes
-- Wireframes de catalogo y detalle (escritorio y movil)
-- Tablero Kanban con las 16 historias de usuario y 52 puntos
