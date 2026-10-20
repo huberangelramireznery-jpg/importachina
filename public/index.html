@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImportaChina 🛒</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="importmap">{ "imports": {
+"firebase/app": "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js",
+"firebase/auth": "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js",
+"firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"
+} }</script>
+<style>[x-cloak]{display:none!important}.view[hidden]{display:none!important}</style>
+</head>
+<body class="font-sans antialiased text-stone-800 bg-amber-50">
+
+<header class="bg-white border-b-2 border-amber-200 sticky top-0 z-30 shadow-sm">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 py-3 flex-wrap">
+<h1 class="text-2xl font-black text-orange-900">🛒 ImportaChina</h1>
+<nav class="flex items-center gap-2 flex-wrap text-xs font-bold">
+<button data-v="catalogo" class="nav px-3 py-2 rounded-xl bg-amber-100 text-orange-800 border border-amber-300">Catálogo</button>
+<button data-v="carrito" id="navCarrito" style="display:none" class="nav px-3 py-2 rounded-xl bg-amber-100 text-orange-800 border border-amber-300">Carrito (<span id="cartN">0</span>)</button>
+<button data-v="pedidos" id="navPedidos" style="display:none" class="nav px-3 py-2 rounded-xl bg-amber-100 text-orange-800 border border-amber-300">Mis pedidos</button>
+<button data-v="panel" id="navPanel" style="display:none" class="nav px-3 py-2 rounded-xl bg-orange-700 text-white">Panel</button>
+<button data-v="perfil" id="navPerfil" style="display:none" class="nav px-3 py-2 rounded-xl bg-amber-100 text-orange-800 border border-amber-300">Perfil</button>
+<button id="btnSalir" style="display:none" class="px-3 py-2 rounded-xl bg-red-600 text-white">Salir</button>
+<button id="btnEntrar" class="px-3 py-2 rounded-xl bg-orange-700 text-white">Entrar</button>
+</nav>
+</div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+
+<!-- ============ CATÁLOGO ============ -->
+<section class="view space-y-5" id="v-catalogo">
+<div class="rounded-3xl p-6 text-white shadow-lg relative overflow-hidden" style="background:linear-gradient(135deg,#b45309 0%,#ea580c 55%,#f59e0b 100%)">
+<h2 class="text-2xl font-black">Productos importados de China</h2>
+<p class="text-amber-50 text-sm font-semibold mt-1">Precio de venta calculado sobre el costo de importación y el margen configurado.</p>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow flex flex-wrap gap-3 items-end">
+<div class="flex-1 min-w-[220px]">
+<label class="block text-xs font-black text-orange-800 mb-1">Buscar por palabra clave</label>
+<input id="q" placeholder="Ej. audífonos, teclado, lámpara..." class="w-full p-2.5 rounded-xl border-2 border-amber-300 focus:border-orange-500 outline-none">
+</div>
+<div class="min-w-[180px]">
+<label class="block text-xs font-black text-orange-800 mb-1">Categoría</label>
+<select id="fCat" class="w-full p-2.5 rounded-xl border-2 border-amber-300 focus:border-orange-500 outline-none"></select>
+</div>
+<button id="btnLimpiar" class="px-4 py-2.5 rounded-xl bg-stone-100 text-stone-700 font-bold">Limpiar</button>
+</div>
+<div id="grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+<div id="pagin" class="flex justify-center gap-2 items-center text-sm"></div>
+</section>
+
+<!-- ============ DETALLE PRODUCTO ============ -->
+<section class="view" id="v-producto" hidden>
+<button data-v="catalogo" class="nav text-sm font-bold text-orange-700 mb-3">← Volver al catálogo</button>
+<div id="detalle" class="bg-white rounded-3xl p-6 shadow grid md:grid-cols-2 gap-6"></div>
+</section>
+
+<!-- ============ CARRITO ============ -->
+<section class="view" id="v-carrito" hidden>
+<div class="bg-white rounded-3xl p-6 shadow">
+<h2 class="text-xl font-black text-orange-900 mb-4">🛒 Mi carrito</h2>
+<div id="cartItems"></div>
+<div class="mt-4 pt-3 border-t flex justify-between items-center font-black text-lg">
+<span>Total</span><span id="cartTotal" class="text-orange-700">Bs 0.00</span>
+</div>
+<button id="btnCheckout" class="mt-4 w-full py-3 rounded-xl text-white font-black" style="background:linear-gradient(90deg,#c2410c,#ea580c)">Continuar con el pedido</button>
+</div>
+</section>
+
+<!-- ============ CHECKOUT ============ -->
+<section class="view" id="v-checkout" hidden>
+<div class="bg-white rounded-3xl p-6 shadow max-w-2xl mx-auto">
+<h2 class="text-xl font-black text-orange-900 mb-4">Confirmar pedido</h2>
+<div class="grid sm:grid-cols-2 gap-3">
+<div><label class="block text-xs font-black text-orange-800 mb-1">Nombre</label><input id="coNom" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+<div><label class="block text-xs font-black text-orange-800 mb-1">Teléfono</label><input id="coTel" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+<div class="sm:col-span-2"><label class="block text-xs font-black text-orange-800 mb-1">Dirección de envío</label><input id="coDir" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+</div>
+<div class="mt-4 p-3 rounded-xl flex justify-between font-black" style="background:#fffbeb"><span>Total a pagar</span><span id="coTotal" class="text-orange-700">Bs 0.00</span></div>
+<button id="btnConfirmar" class="mt-4 w-full py-3 rounded-xl text-white font-black" style="background:linear-gradient(90deg,#c2410c,#ea580c)">Confirmar compra</button>
+</div>
+</section>
+
+<!-- ============ MIS PEDIDOS ============ -->
+<section class="view" id="v-pedidos" hidden>
+<div class="bg-white rounded-3xl p-6 shadow">
+<h2 class="text-xl font-black text-orange-900 mb-4">📦 Mis pedidos</h2>
+<div class="space-y-3" id="misPedidos"></div>
+</div>
+</section>
+
+<!-- ============ PERFIL ============ -->
+<section class="view" id="v-perfil" hidden>
+<div class="bg-white rounded-3xl p-6 shadow max-w-xl mx-auto">
+<h2 class="text-xl font-black text-orange-900 mb-4">👤 Mi perfil</h2>
+<div class="space-y-3">
+<div><label class="block text-xs font-black text-orange-800 mb-1">Nombre</label><input id="pfNom" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+<div><label class="block text-xs font-black text-orange-800 mb-1">Teléfono</label><input id="pfTel" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+<div><label class="block text-xs font-black text-orange-800 mb-1">Dirección de envío</label><input id="pfDir" class="w-full p-2.5 rounded-xl border-2 border-amber-300"></div>
+</div>
+<button id="btnPerfil" class="mt-4 w-full py-3 rounded-xl text-white font-black" style="background:#c2410c">Guardar cambios</button>
+</div>
+</section>
+
+<!-- ============ PANEL ============ -->
+<section class="view" id="v-panel" hidden>
+<div class="flex gap-2 flex-wrap mb-4">
+<button data-p="productos" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Productos</button>
+<button data-p="categorias" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Categorías</button>
+<button data-p="pedidos" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Pedidos</button>
+<button data-p="usuarios" id="tabUsuarios" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Usuarios</button>
+<button data-p="sync" id="tabSync" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Sincronizar</button>
+<button data-p="reportes" id="tabReportes" class="ptab px-4 py-2 rounded-xl font-black text-sm bg-white border-2 border-amber-300 text-orange-800">Reportes</button>
+</div>
+
+<div class="ptabview space-y-4" id="p-productos">
+<div class="bg-white rounded-3xl p-5 shadow">
+<h3 class="font-black text-orange-900 mb-3">➕ Producto</h3>
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+<input id="prNombre" placeholder="NombreProducto" class="p-2.5 rounded-xl border-2 border-amber-300">
+<input id="prCosto" type="number" step="0.01" placeholder="Precio de costo (Bs)" class="p-2.5 rounded-xl border-2 border-amber-300">
+<input id="prMargen" type="number" step="0.01" placeholder="Margen %" class="p-2.5 rounded-xl border-2 border-amber-300">
+<input id="prStock" type="number" placeholder="Stock" class="p-2.5 rounded-xl border-2 border-amber-300">
+<select id="prCat" class="p-2.5 rounded-xl border-2 border-amber-300"></select>
+<input id="prImagen" placeholder="URL de imagen (https://...)" class="p-2.5 rounded-xl border-2 border-amber-300">
+<input id="prDesc" placeholder="Descripción" class="p-2.5 rounded-xl border-2 border-amber-300 sm:col-span-2 lg:col-span-3">
+</div>
+<div class="mt-3 flex gap-2">
+<button id="btnPrAdd" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#c2410c">Guardar</button>
+<button id="btnPrDel" style="display:none" class="px-5 py-2.5 rounded-xl bg-red-600 text-white font-black">Eliminar</button>
+<button id="btnPrCancel" style="display:none" class="px-5 py-2.5 rounded-xl bg-stone-200 text-stone-700 font-black">Cancelar</button>
+</div>
+</div>
+<div class="bg-white rounded-3xl p-5 shadow overflow-x-auto">
+<h3 class="font-black text-orange-900 mb-3">Inventario</h3>
+<table class="w-full text-sm"><thead><tr class="text-amber-800"><th class="text-left p-2">Producto</th><th class="text-left p-2">Categoría</th><th class="text-left p-2">Costo</th><th class="text-left p-2">Margen</th><th class="text-left p-2">Venta</th><th class="text-left p-2">Stock</th><th class="p-2"></th></tr></thead><tbody id="tbProductos"></tbody></table>
+</div>
+</div>
+
+<div class="ptabview space-y-4" id="p-categorias" hidden>
+<div class="bg-white rounded-3xl p-5 shadow">
+<h3 class="font-black text-orange-900 mb-3">➕ Categoría</h3>
+<div class="flex gap-2 flex-wrap"><input id="catNombre" placeholder="NombreCategoria" class="p-2.5 rounded-xl border-2 border-amber-300 flex-1 min-w-[200px]">
+<button id="btnCatAdd" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#c2410c">Guardar</button></div>
+<div id="tbCategorias" class="mt-3 text-sm font-semibold text-amber-900"></div>
+</div>
+</div>
+
+<div class="ptabview space-y-4" id="p-pedidos" hidden>
+<div class="bg-white rounded-3xl p-5 shadow overflow-x-auto">
+<h3 class="font-black text-orange-900 mb-3">Pedidos</h3>
+<table class="w-full text-sm"><thead><tr class="text-amber-800"><th class="text-left p-2">#</th><th class="text-left p-2">Fecha</th><th class="text-left p-2">Cliente</th><th class="text-left p-2">Total</th><th class="text-left p-2">Estado</th><th class="p-2">Acciones</th></tr></thead><tbody id="tbPedidos"></tbody></table>
+</div>
+<div id="detPedido" class="bg-white rounded-3xl p-5 shadow" style="display:none"></div>
+</div>
+
+<div class="ptabview space-y-4" id="p-usuarios" hidden>
+<div class="bg-white rounded-3xl p-5 shadow overflow-x-auto">
+<h3 class="font-black text-orange-900 mb-3">Usuarios</h3>
+<table class="w-full text-sm"><thead><tr class="text-amber-800"><th class="text-left p-2">Correo</th><th class="text-left p-2">Rol</th><th class="text-left p-2">Estado</th><th class="p-2">Acciones</th></tr></thead><tbody id="tbUsuarios"></tbody></table>
+</div>
+</div>
+
+<div class="ptabview space-y-4" id="p-sync" hidden>
+<div class="bg-white rounded-3xl p-5 shadow">
+<h3 class="font-black text-orange-900 mb-1">🔄 Sincronizar catálogo</h3>
+<p class="text-xs font-semibold text-amber-800 mb-3">Importa productos desde el catálogo de demostración y registra el resultado de cada sincronización.</p>
+<button id="btnSync" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#c2410c">Ejecutar sincronización</button>
+<div id="syncLogs" class="mt-4 text-sm"></div>
+</div>
+</div>
+
+<div class="ptabview space-y-4" id="p-reportes" hidden>
+<div class="bg-white rounded-3xl p-5 shadow">
+<h3 class="font-black text-orange-900 mb-3">📊 Reporte de ventas por rango de fechas</h3>
+<div class="flex gap-3 flex-wrap items-end">
+<div><label class="block text-xs font-black text-orange-800 mb-1">Desde</label><input id="rpDesde" type="date" class="p-2.5 rounded-xl border-2 border-amber-300"></div>
+<div><label class="block text-xs font-black text-orange-800 mb-1">Hasta</label><input id="rpHasta" type="date" class="p-2.5 rounded-xl border-2 border-amber-300"></div>
+<button id="btnReporte" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#c2410c">Calcular</button>
+</div>
+<div id="repOut" class="mt-4"></div>
+</div>
+</div>
+</section>
+
+</main>
+
+<script type="module">
+import { initializeApp } from "firebase/app";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getFirestore, collection, getDoc, doc, addDoc, updateDoc, deleteDoc, setDoc, serverTimestamp, onSnapshot, query, where, increment } from "firebase/firestore";
+import { firebaseConfig } from "./firebase-config.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let productos = [], categorias = [], pedidos = [], usuarios = [], miRol = "", miUid = "", editProdId = null, detPedId = null;
+let cart = JSON.parse(localStorage.getItem("carritoIC") || "[]");
+let pagina = 1, POR_PAGINA = 8;
+
+const esAdmin = () => miRol === "administrador";
+const esVendedor = () => miRol === "vendedor" || miRol === "administrador";
+
+function guardarCarrito(){ localStorage.setItem("carritoIC", JSON.stringify(cart)); document.getElementById("cartN").textContent = cart.length; }
+function ver(v){
+  document.querySelectorAll(".view").forEach(d => { d.hidden = true; });
+  const el = document.getElementById("v-" + v);
+  if (!el) return;
+  el.hidden = false;
+  if (v === "pedidos") renderMisPedidos();
+  if (v === "perfil") cargarPerfil();
+  if (v === "panel") renderPanel();
+  window.scrollTo({ top: 0 });
+}
+document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => ver(b.dataset.v));
+document.querySelectorAll(".ptab").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".ptabview").forEach(x => x.hidden = true);
+  document.getElementById("p-" + b.dataset.p).hidden = false;
+});
+document.getElementById("btnEntrar").onclick = () => location.href = "login.html";
+document.getElementById("btnSalir").onclick = () => signOut(auth).then(() => location.reload());
+
+onAuthStateChanged(auth, async (u) => {
+  if (!u) { document.getElementById("btnEntrar").style.display = ""; document.getElementById("btnSalir").style.display = "none"; return; }
+  const snap = await getDoc(doc(db, "Usuarios", u.uid));
+  if (!snap.exists() || snap.data().Estado !== "aprobado") { alert("Cuenta pendiente de aprobación."); signOut(auth); return; }
+  miUid = u.uid; miRol = snap.data().RolUsuario || "cliente";
+  document.getElementById("btnEntrar").style.display = "none";
+  document.getElementById("btnSalir").style.display = "";
+  ["navCarrito","navPedidos","navPerfil"].forEach(id => document.getElementById(id).style.display = "");
+  if (esVendedor()) document.getElementById("navPanel").style.display = "";
+  if (!esAdmin()) { document.getElementById("tabUsuarios").style.display = "none"; document.getElementById("tabSync").style.display = "none"; document.getElementById("tabReportes").style.display = "none"; }
+  renderPanel();
+  renderMisPedidos();
+});
+document.getElementById("btnSalir").onclick = () => signOut(auth).then(() => location.reload());
+
+/* ---------- CATÁLOGO ---------- */
+onSnapshot(collection(db, "Categorias"), s => {
+  categorias = []; s.forEach(d => categorias.push({ id: d.id, ...d.data() }));
+  const f = document.getElementById("fCat"), p = document.getElementById("prCat");
+  const k1 = f.value, k2 = p.value;
+  f.innerHTML = `<option value="">Todas las categorías</option>`; p.innerHTML = "";
+  categorias.forEach(c => {
+    const o = document.createElement("option"); o.value = c.id; o.textContent = c.NombreCategoria; f.appendChild(o);
+    p.appendChild(o.cloneNode(true));
+  });
+  if ([...f.options].some(o => o.value === k1)) f.value = k1;
+  if ([...p.options].some(o => o.value === k2)) p.value = k2;
+  renderCatalogo();
+});
+onSnapshot(collection(db, "Productos"), s => {
+  productos = []; s.forEach(d => productos.push({ id: d.id, ...d.data() }));
+  renderCatalogo(); renderTablaProductos();
+});
+document.getElementById("q").oninput = () => { pagina = 1; renderCatalogo(); };
+document.getElementById("fCat").onchange = () => { pagina = 1; renderCatalogo(); };
+document.getElementById("btnLimpiar").onclick = () => { document.getElementById("q").value = ""; document.getElementById("fCat").value = ""; pagina = 1; renderCatalogo(); };
+
+function renderCatalogo(){
+  const q = document.getElementById("q").value.toLowerCase().trim();
+  const fc = document.getElementById("fCat").value;
+  let list = productos.filter(p => p.activo !== false);
+  if (q) list = list.filter(p => (p.NombreProducto || "").toLowerCase().includes(q));
+  if (fc) list = list.filter(p => p.IdCategoria === fc);
+  const total = list.length;
+  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+  if (pagina > paginas) pagina = paginas;
+  const trozo = list.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA);
+  const g = document.getElementById("grid");
+  g.innerHTML = trozo.length ? "" : `<div class="col-span-full text-center py-12 bg-white rounded-3xl shadow"><p class="font-black text-orange-900">No hay productos que coincidan</p></div>`;
+  trozo.forEach(p => {
+    const d = document.createElement("div");
+    d.className = "bg-white rounded-3xl shadow hover:shadow-xl transition overflow-hidden flex flex-col";
+    d.style.border = "2px solid #fdba74";
+    d.innerHTML = `<div class="h-32 bg-amber-100 flex items-center justify-center overflow-hidden">
+      ${p.ImagenUrl ? `<img src="${p.ImagenUrl}" class="w-full h-full object-contain p-2">` : `<span class="text-4xl">📦</span>`}</div>
+      <div class="p-3 flex-1 flex flex-col">
+      <b class="text-sm text-orange-900 leading-tight">${p.NombreProducto || ""}</b>
+      <span class="text-xs text-amber-800 font-semibold mt-0.5">${catNombre(p.IdCategoria)}</span>
+      <div class="mt-auto pt-2 flex items-center justify-between">
+      <span class="font-black text-orange-700">Bs ${Number(p.PrecioVenta || 0).toFixed(2)}</span>
+      <button class="verprod px-3 py-1.5 rounded-lg text-white text-xs font-black" data-id="${p.id}" style="background:#c2410c">Ver</button>
+      </div></div>`;
+    d.querySelector(".verprod").onclick = () => verDetalle(p.id);
+    g.appendChild(d);
+  });
+  const pg = document.getElementById("pagin");
+  pg.innerHTML = "";
+  if (paginas > 1) {
+    const prev = document.createElement("button"); prev.textContent = "←"; prev.className = "px-3 py-1 rounded-lg bg-white border font-black";
+    prev.onclick = () => { pagina--; renderCatalogo(); };
+    const info = document.createElement("span"); info.className = "font-bold px-2"; info.textContent = `Página ${pagina} de ${paginas} — ${total} productos`;
+    const next = document.createElement("button"); next.textContent = "→"; next.className = "px-3 py-1 rounded-lg bg-white border font-black";
+    next.onclick = () => { pagina++; renderCatalogo(); };
+    pg.append(prev, info, next);
+  }
+}
+const catNombre = (id) => categorias.find(c => c.id === id)?.NombreCategoria || "General";
+
+function verDetalle(id){
+  const p = productos.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById("detalle").innerHTML = `
+    <div><div class="h-64 bg-amber-100 rounded-2xl flex items-center justify-center overflow-hidden">
+      ${p.ImagenUrl ? `<img src="${p.ImagenUrl}" class="w-full h-full object-contain p-3">` : `<span class="text-7xl">📦</span>`}</div>
+      ${(p.imagenes || []).length ? `<div class="flex gap-2 mt-2">${p.imagenes.map(u => `<img src="${u}" class="w-16 h-16 object-contain bg-amber-50 rounded-lg border">`).join("")}</div>` : ""}</div>
+    <div class="flex flex-col gap-3">
+      <span class="text-xs font-black text-amber-800">${catNombre(p.IdCategoria)}</span>
+      <h2 class="text-2xl font-black text-orange-900">${p.NombreProducto || ""}</h2>
+      <p class="text-sm text-stone-600">${p.DescripcionProducto || "Sin descripción."}</p>
+      <div class="p-3 rounded-xl" style="background:#fffbeb"><div class="text-xs font-bold text-amber-800">Costo de importación</div><div class="font-black">Bs ${Number(p.PrecioCosto || 0).toFixed(2)}</div>
+      <div class="text-xs font-bold text-amber-800 mt-1">Margen ${Number(p.MargenPct || 0)}% → precio de venta <span class="font-black text-orange-700">Bs ${Number(p.PrecioVenta || 0).toFixed(2)}</span></div></div>
+      <div class="text-sm font-bold">Stock disponible: <span class="text-orange-700">${p.Stock || 0}</span></div>
+      <button id="btnAddCart" class="py-3 rounded-xl text-white font-black" style="background:linear-gradient(90deg,#c2410c,#ea580c)" ${p.Stock <= 0 ? "disabled" : ""}>🛒 Agregar al carrito</button>
+    </div>`;
+  document.getElementById("btnAddCart").onclick = () => {
+    const ex = cart.find(i => i.id === id);
+    if (ex) ex.cantidad++; else cart.push({ id, nombre: p.NombreProducto, precio: Number(p.PrecioVenta || 0), cantidad: 1 });
+    guardarCarrito(); alert("Producto agregado al carrito");
+  };
+  ver("producto");
+}
+
+/* ---------- CARRITO (HU-10) ---------- */
+function renderCarrito(){
+  const el = document.getElementById("cartItems");
+  if (!cart.length) { el.innerHTML = `<p class="text-sm font-bold text-stone-500">Tu carrito está vacío.</p>`; document.getElementById("cartTotal").textContent = "Bs 0.00"; return; }
+  let total = 0; el.innerHTML = "";
+  cart.forEach((it, i) => {
+    total += it.precio * it.cantidad;
+    const fila = document.createElement("div");
+    fila.className = "flex items-center gap-3 py-2 border-b border-amber-100";
+    fila.innerHTML = `<span class="flex-1 text-sm font-semibold">${it.nombre}</span>
+      <input type="number" min="1" value="${it.cantidad}" class="w-16 p-1.5 rounded-lg border-2 border-amber-300 text-sm">
+      <span class="w-24 text-right font-black text-sm">Bs ${(it.precio * it.cantidad).toFixed(2)}</span>
+      <button class="quitar px-2 py-1 rounded-lg bg-red-100 text-red-700 font-black text-xs">x</button>`;
+    fila.querySelector("input").oninput = (e) => { it.cantidad = Math.max(1, Number(e.target.value) || 1); guardarCarrito(); renderCarrito(); };
+    fila.querySelector(".quitar").onclick = () => { cart.splice(i, 1); guardarCarrito(); renderCarrito(); };
+    el.appendChild(fila);
+  });
+  document.getElementById("cartTotal").textContent = "Bs " + total.toFixed(2);
+}
+document.getElementById("btnCheckout").onclick = () => {
+  if (!cart.length) return alert("El carrito está vacío");
+  if (!auth.currentUser) return alert("Inicia sesión para confirmar tu pedido");
+  document.getElementById("coTotal").textContent = "Bs " + cart.reduce((a, i) => a + i.precio * i.cantidad, 0).toFixed(2);
+  ver("checkout");
+};
+document.getElementById("btnConfirmar").onclick = async () => {
+  const nom = document.getElementById("coNom").value.trim();
+  const tel = document.getElementById("coTel").value.trim();
+  const dir = document.getElementById("coDir").value.trim();
+  if (!nom || !tel || !dir) return alert("Completa nombre, teléfono y dirección");
+  const items = cart.map(i => ({ productoId: i.id, nombre: i.nombre, cantidad: i.cantidad, precioUnitario: i.precio, subtotal: +(i.precio * i.cantidad).toFixed(2) }));
+  const total = +items.reduce((a, i) => a + i.subtotal, 0).toFixed(2);
+  const ref = await addDoc(collection(db, "Pedidos"), {
+    UsuarioId: miUid, ClienteNombre: nom, ClienteTelefono: tel,
+    DireccionEnvio: dir, Total: total, Estado: "pendiente",
+    items, createdAt: serverTimestamp()
+  });
+  for (const it of items) await updateDoc(doc(db, "Productos", it.productoId), { Stock: increment(-it.cantidad) });
+  cart = []; guardarCarrito(); renderCarrito();
+  alert("¡Pedido confirmado! N° " + ref.id.slice(0, 6).toUpperCase());
+  ver("pedidos");
+};
+
+/* ---------- MIS PEDIDOS (HU-14) ---------- */
+function renderMisPedidos(){
+  const el = document.getElementById("misPedidos");
+  if (!el) return;
+  const mios = pedidos.filter(p => p.UsuarioId === miUid);
+  el.innerHTML = mios.length ? "" : `<p class="text-sm font-bold text-stone-500">Todavía no tienes pedidos.</p>`;
+  mios.forEach(p => {
+    const d = document.createElement("div");
+    d.className = "border-2 border-amber-200 rounded-2xl p-3";
+    d.innerHTML = `<div class="flex justify-between flex-wrap gap-2"><b class="text-sm">#${p.id.slice(0, 6).toUpperCase()}</b>
+      <span class="text-xs font-black px-2 py-1 rounded-full ${estadoColor(p.Estado)}">${p.Estado}</span></div>
+      <p class="text-xs text-stone-600 mt-1">${new Date(p.createdAt?.seconds ? p.createdAt.seconds * 1000 : Date.now()).toLocaleString("es-BO")}</p>
+      <p class="text-xs mt-1">${(p.items || []).map(i => `${i.cantidad}x ${i.nombre}`).join(", ")}</p>
+      <p class="font-black text-orange-700 mt-1">Bs ${Number(p.Total || 0).toFixed(2)}</p>`;
+    el.appendChild(d);
+  });
+}
+const estadoColor = (e) => ({ pendiente: "bg-amber-100 text-amber-800", pagado: "bg-sky-100 text-sky-800", enviado: "bg-violet-100 text-violet-800", entregado: "bg-green-100 text-green-800", cancelado: "bg-red-100 text-red-700" }[e] || "bg-stone-100 text-stone-700");
+
+/* ---------- PERFIL (HU-04) ---------- */
+async function cargarPerfil(){
+  if (!auth.currentUser) return;
+  const s = await getDoc(doc(db, "Usuarios", auth.currentUser.uid));
+  if (!s.exists()) return;
+  document.getElementById("pfNom").value = s.data().NombreUsuario || "";
+  document.getElementById("pfTel").value = s.data().TelefonoUsuario || "";
+  document.getElementById("pfDir").value = s.data().DireccionUsuario || "";
+}
+document.getElementById("btnPerfil").onclick = async () => {
+  await updateDoc(doc(db, "Usuarios", auth.currentUser.uid), {
+    NombreUsuario: document.getElementById("pfNom").value.trim(),
+    TelefonoUsuario: document.getElementById("pfTel").value.trim(),
+    DireccionUsuario: document.getElementById("pfDir").value.trim()
+  });
+  alert("Perfil actualizado");
+};
+
+/* ---------- PANEL ---------- */
+onSnapshot(collection(db, "Pedidos"), s => {
+  pedidos = []; s.forEach(d => pedidos.push({ id: d.id, ...d.data() }));
+  renderMisPedidos(); renderPanel();
+});
+onSnapshot(collection(db, "Usuarios"), s => {
+  usuarios = []; s.forEach(d => usuarios.push({ id: d.id, ...d.data() }));
+  renderTablaUsuarios();
+});
+function renderPanel(){
+  if (!esVendedor()) return;
+  renderTablaProductos(); renderTablaUsuarios(); renderTablaPedidos(); renderSyncLogs(); renderReporte();
+}
+function renderTablaProductos(){
+  const tb = document.getElementById("tbProductos"); if (!tb) return;
+  tb.innerHTML = "";
+  productos.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="p-2 font-semibold">${p.NombreProducto || ""}</td><td class="p-2">${catNombre(p.IdCategoria)}</td>
+      <td class="p-2">Bs ${Number(p.PrecioCosto || 0).toFixed(2)}</td><td class="p-2">${Number(p.MargenPct || 0)}%</td>
+      <td class="p-2 font-black">Bs ${Number(p.PrecioVenta || 0).toFixed(2)}</td><td class="p-2">${p.Stock || 0}</td><td class="p-2"></td>`;
+    const e = document.createElement("button"); e.textContent = "✏️"; e.className = "px-2 py-1 rounded-lg bg-amber-100 font-black text-xs";
+    e.onclick = () => {
+      editProdId = p.id;
+      document.getElementById("prNombre").value = p.NombreProducto || "";
+      document.getElementById("prCosto").value = p.PrecioCosto || 0;
+      document.getElementById("prMargen").value = p.MargenPct || 0;
+      document.getElementById("prStock").value = p.Stock || 0;
+      document.getElementById("prCat").value = p.IdCategoria || "";
+      document.getElementById("prImagen").value = p.ImagenUrl || "";
+      document.getElementById("prDesc").value = p.DescripcionProducto || "";
+      document.getElementById("btnPrDel").style.display = "";
+      document.getElementById("btnPrCancel").style.display = "";
+    };
+    tr.lastChild.appendChild(e); tb.appendChild(tr);
+  });
+}
+document.getElementById("btnPrAdd").onclick = async () => {
+  if (!esAdmin()) return alert("Solo el administrador gestiona productos");
+  const nombre = document.getElementById("prNombre").value.trim();
+  if (!nombre) return alert("El nombre es obligatorio");
+  const costo = Number(document.getElementById("prCosto").value || 0);
+  const margen = Number(document.getElementById("prMargen").value || 0);
+  const data = {
+    NombreProducto: nombre, PrecioCosto: costo, MargenPct: margen,
+    PrecioVenta: +(costo * (1 + margen / 100)).toFixed(2),
+    Stock: Number(document.getElementById("prStock").value || 0),
+    IdCategoria: document.getElementById("prCat").value || "",
+    ImagenUrl: document.getElementById("prImagen").value.trim(),
+    DescripcionProducto: document.getElementById("prDesc").value.trim(),
+    activo: true, syncedAt: null
+  };
+  if (editProdId) { await updateDoc(doc(db, "Productos", editProdId), data); editProdId = null; }
+  else await addDoc(collection(db, "Productos"), { ...data, createdAt: serverTimestamp() });
+  ["prNombre","prCosto","prMargen","prStock","prImagen","prDesc"].forEach(i => document.getElementById(i).value = "");
+  document.getElementById("btnPrDel").style.display = "none";
+  document.getElementById("btnPrCancel").style.display = "none";
+};
+document.getElementById("btnPrCancel").onclick = () => {
+  editProdId = null;
+  ["prNombre","prCosto","prMargen","prStock","prImagen","prDesc"].forEach(i => document.getElementById(i).value = "");
+  document.getElementById("btnPrDel").style.display = "none";
+  document.getElementById("btnPrCancel").style.display = "none";
+};
+document.getElementById("btnPrDel").onclick = async () => {
+  if (!editProdId || !confirm("¿Eliminar el producto?")) return;
+  await deleteDoc(doc(db, "Productos", editProdId));
+  editProdId = null; document.getElementById("btnPrDel").style.display = "none";
+};
+function renderTablaCategorias(){
+  const el = document.getElementById("tbCategorias"); if (!el) return;
+  el.innerHTML = "";
+  categorias.forEach(c => {
+    const r = document.createElement("div");
+    r.className = "flex items-center gap-2 py-1 border-b border-amber-100";
+    r.innerHTML = `<span>${c.NombreCategoria}</span><span class="text-xs text-stone-500">(${c.EstadoCategoria || "Activo"})</span>`;
+    const d = document.createElement("button"); d.textContent = "🗑️"; d.className = "ml-auto px-2 py-1 rounded-lg bg-red-100 text-red-700 font-black text-xs";
+    d.onclick = async () => {
+      const usados = productos.filter(p => p.IdCategoria === c.id).length;
+      if (usados) return alert("No se puede eliminar: hay " + usados + " producto(s) con esta categoría");
+      if (confirm("¿Eliminar la categoría?")) await deleteDoc(doc(db, "Categorias", c.id));
+    };
+    r.appendChild(d); el.appendChild(r);
+  });
+}
+document.getElementById("btnCatAdd").onclick = async () => {
+  if (!esAdmin()) return alert("Solo el administrador");
+  const n = document.getElementById("catNombre").value.trim();
+  if (!n) return alert("Nombre obligatorio");
+  if (categorias.some(c => (c.NombreCategoria || "").toLowerCase() === n.toLowerCase())) return alert("Ya existe una categoría con ese nombre");
+  await addDoc(collection(db, "Categorias"), { NombreCategoria: n, EstadoCategoria: "Activo", createdAt: serverTimestamp() });
+  document.getElementById("catNombre").value = "";
+};
+function renderTablaPedidos(){
+  const tb = document.getElementById("tbPedidos"); if (!tb) return;
+  tb.innerHTML = "";
+  pedidos.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="p-2 font-black">#${String(pedidos.length - i).padStart(3, "0")}</td>
+      <td class="p-2">${new Date(p.createdAt?.seconds ? p.createdAt.seconds * 1000 : Date.now()).toLocaleDateString("es-BO")}</td>
+      <td class="p-2">${p.ClienteNombre || ""}</td>
+      <td class="p-2 font-black">Bs ${Number(p.Total || 0).toFixed(2)}</td>
+      <td class="p-2"><span class="text-xs font-black px-2 py-1 rounded-full ${estadoColor(p.Estado)}">${p.Estado}</span></td>
+      <td class="p-2"></td>`;
+    const sel = document.createElement("select");
+    sel.className = "p-1 rounded-lg border-2 border-amber-300 text-xs font-bold";
+    ["pendiente", "pagado", "enviado", "entregado", "cancelado"].forEach(e => {
+      const o = document.createElement("option"); o.value = e; o.textContent = e; if (e === p.Estado) o.selected = true; sel.appendChild(o);
+    });
+    sel.onchange = async () => { await updateDoc(doc(db, "Pedidos", p.id), { Estado: sel.value }); };
+    const v = document.createElement("button"); v.textContent = "👁️ Detalle"; v.className = "px-2 py-1 rounded-lg bg-amber-100 font-black text-xs ml-1";
+    v.onclick = () => verDetallePedido(p);
+    const pg = document.createElement("button"); pg.textContent = "💰 Pagar"; pg.className = "px-2 py-1 rounded-lg bg-green-600 text-white font-black text-xs ml-1";
+    pg.onclick = () => registrarPago(p);
+    tr.lastChild.append(sel, v, pg);
+    tb.appendChild(tr);
+  });
+}
+function verDetallePedido(p){
+  detPedId = p.id;
+  const d = document.getElementById("detPedido");
+  d.style.display = "block";
+  d.innerHTML = `<h3 class="font-black text-orange-900 mb-2">Pedido #${p.id.slice(0, 6).toUpperCase()}</h3>
+    <p class="text-sm"><b>Cliente:</b> ${p.ClienteNombre || ""} — ${p.ClienteTelefono || ""}</p>
+    <p class="text-sm"><b>Dirección:</b> ${p.DireccionEnvio || ""}</p>
+    <p class="text-sm"><b>Estado:</b> ${p.Estado}</p>
+    <div class="mt-2 text-sm">${(p.items || []).map(i => `${i.cantidad}x ${i.nombre} — Bs ${Number(i.subtotal).toFixed(2)}`).join("<br>")}</div>
+    <p class="font-black mt-2">Total: Bs ${Number(p.Total || 0).toFixed(2)}</p>`;
+  d.scrollIntoView({ behavior: "smooth" });
+}
+async function registrarPago(p){
+  const metodo = prompt("Método de pago (Efectivo / QR / Transferencia)", "QR");
+  if (!metodo) return;
+  const monto = prompt("Monto recibido (Bs)", Number(p.Total || 0).toFixed(2));
+  if (monto === null) return;
+  await addDoc(collection(db, "Pagos"), {
+    PedidoId: p.id, Metodo: metodo, Monto: Number(monto), Estado: "pagado",
+    UsuarioId: miUid, pagadoAt: serverTimestamp()
+  });
+  await updateDoc(doc(db, "Pedidos", p.id), { Estado: "pagado" });
+  alert("Pago registrado");
+}
+function renderTablaUsuarios(){
+  const tb = document.getElementById("tbUsuarios"); if (!tb) return;
+  tb.innerHTML = "";
+  usuarios.forEach(u => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="p-2">${u.CorreoUsuario || ""}</td><td class="p-2" id="rol-${u.id}"></td><td class="p-2">${u.Estado || ""}</td><td class="p-2"></td>`;
+    const sel = document.createElement("select");
+    sel.className = "p-1 rounded-lg border-2 border-amber-300 text-xs font-bold";
+    ["administrador", "vendedor", "cliente"].forEach(r => {
+      const o = document.createElement("option"); o.value = r; o.textContent = r; if (r === u.RolUsuario) o.selected = true; sel.appendChild(o);
+    });
+    sel.onchange = async () => { await updateDoc(doc(db, "Usuarios", u.id), { RolUsuario: sel.value }); };
+    const b = document.createElement("button");
+    b.textContent = u.Estado === "aprobado" ? "Desactivar" : "Aprobar";
+    b.className = "px-2 py-1 rounded-lg bg-amber-100 font-black text-xs ml-1";
+    b.onclick = async () => { await updateDoc(doc(db, "Usuarios", u.id), { Estado: u.Estado === "aprobado" ? "desactivado" : "aprobado" }); };
+    tr.lastChild.append(sel, b);
+    tb.appendChild(tr);
+  });
+}
+/* ---------- SINCRONIZACIÓN (HU-05) ---------- */
+const CATALOGO_DEMO = [
+  ["Audífonos Bluetooth TWS", "Audio", 8.50, 60, "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400"],
+  ["Teclado mecánico RGB", "Accesorios", 22.00, 35, "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400"],
+  ["Lámpara LED de escritorio", "Iluminación", 11.20, 48, "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400"],
+  ["Power bank 20000mAh", "Accesorios", 14.00, 72, "https://images.unsplash.com/photo-1609592424824-c60c4d5e6d0b?w=400"],
+  ["Auriculares gamer 7.1", "Audio", 19.90, 25, "https://images.unsplash.com/photo-1599669454699-248893623440?w=400"],
+  ["Mouse inalámbrico ergonómico", "Accesorios", 9.80, 54, "https://images.unsplash.com/photo-1527814050087-3793815479db?w=400"],
+  ["Cámara de acción 4K", "Electrónica", 58.00, 12, "https://images.unsplash.com/photo-1502920514313-52581002a659?w=400"],
+  ["Soporte de celular regulable", "Accesorios", 6.40, 90, "https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=400"]
+];
+document.getElementById("btnSync").onclick = async () => {
+  if (!esAdmin()) return alert("Solo el administrador");
+  const btn = document.getElementById("btnSync");
+  btn.disabled = true; btn.textContent = "Sincronizando...";
+  let nuevos = 0, omitidos = 0;
+  for (const [nombre, catNombreTxt, costo, stock, img] of CATALOGO_DEMO) {
+    const existe = productos.find(p => (p.NombreProducto || "").toLowerCase() === nombre.toLowerCase());
+    if (existe) { omitidos++; continue; }
+    let catId = categorias.find(c => c.NombreCategoria === catNombreTxt)?.id;
+    if (!catId) {
+      const r = await addDoc(collection(db, "Categorias"), { NombreCategoria: catNombreTxt, EstadoCategoria: "Activo", createdAt: serverTimestamp() });
+      catId = r.id; await new Promise(r2 => setTimeout(r2, 250));
+    }
+    await addDoc(collection(db, "Productos"), {
+      NombreProducto: nombre, PrecioCosto: costo, MargenPct: 30,
+      PrecioVenta: +(costo * 1.3).toFixed(2), Stock: stock,
+      IdCategoria: catId, ImagenUrl: img, DescripcionProducto: "Producto importado, calidad garantizada.",
+      activo: true, externalId: "DEMO-" + nombre.slice(0, 6).toUpperCase(), syncedAt: serverTimestamp()
+    });
+    nuevos++;
+    await new Promise(r2 => setTimeout(r2, 250));
+  }
+  await addDoc(collection(db, "SyncLogs"), {
+    UsuarioId: miUid, ItemsImportados: nuevos, Omitidos: omitidos, Estado: "exitoso",
+    Mensaje: `Sincronización completada: ${nuevos} importados, ${omitidos} ya existentes.`, createdAt: serverTimestamp()
+  });
+  btn.disabled = false; btn.textContent = "Ejecutar sincronización";
+  alert(`Sincronización completada: ${nuevos} productos nuevos`);
+};
+onSnapshot(collection(db, "SyncLogs"), s => {
+  const el = document.getElementById("syncLogs"); if (!el) return;
+  el.innerHTML = "";
+  s.forEach(d => {
+    const l = d.data();
+    const r = document.createElement("div");
+    r.className = "py-2 border-b border-amber-100 text-sm";
+    r.innerHTML = `<b>${new Date(l.createdAt?.seconds ? l.createdAt.seconds * 1000 : Date.now()).toLocaleString("es-BO")}</b> — ${l.ItemsImportados || 0} importados, ${l.Omitidos || 0} omitidos <span class="text-xs font-black px-2 py-0.5 rounded-full bg-green-100 text-green-800">${l.Estado || ""}</span>`;
+    el.appendChild(r);
+  });
+});
+/* ---------- REPORTES (HU-16) ---------- */
+document.getElementById("btnReporte").onclick = () => renderReporte();
+function renderReporte(){
+  const d = document.getElementById("rpDesde").value, h = document.getElementById("rpHasta").value;
+  const desde = d ? new Date(d + "T00:00:00").getTime() : 0;
+  const hasta = h ? new Date(h + "T23:59:59").getTime() : Date.now() + 864e5;
+  const enRango = pedidos.filter(p => {
+    const t = p.createdAt?.seconds ? p.createdAt.seconds * 1000 : 0;
+    return t >= desde && t <= hasta && p.Estado !== "cancelado";
+  });
+  const total = enRango.reduce((a, p) => a + Number(p.Total || 0), 0);
+  const conteo = {};
+  enRango.forEach(p => (p.items || []).forEach(i => { conteo[i.nombre] = (conteo[i.nombre] || 0) + Number(i.cantidad || 0); }));
+  const top = Object.entries(conteo).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  document.getElementById("repOut").innerHTML = `
+    <div class="grid sm:grid-cols-3 gap-3 mb-3">
+      <div class="p-3 rounded-xl text-center" style="background:#fffbeb"><div class="text-xs font-black text-amber-800">Total vendido</div><div class="text-xl font-black text-orange-700">Bs ${total.toFixed(2)}</div></div>
+      <div class="p-3 rounded-xl text-center" style="background:#fffbeb"><div class="text-xs font-black text-amber-800">Pedidos</div><div class="text-xl font-black text-orange-700">${enRango.length}</div></div>
+      <div class="p-3 rounded-xl text-center" style="background:#fffbeb"><div class="text-xs font-black text-amber-800">Productos</div><div class="text-xl font-black text-orange-700">${top.length}</div></div>
+    </div>
+    <h4 class="font-black text-orange-900 mb-1">Top 5 productos vendidos</h4>
+    <ol class="text-sm list-decimal list-inside">${top.map(([n, c]) => `<li>${n} — ${c} unidades</li>`).join("") || "<li>Sin ventas en el periodo</li>"}</ol>`;
+}
+renderCarrito(); guardarCarrito();
+</script>
+</body>
+</html>

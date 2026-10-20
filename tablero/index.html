@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión - ImportaChina | Tablero Kanban</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#0f172a;color:#e2e8f0;padding:18px}
+h1{font-size:20px;margin-bottom:2px}
+p.sub{font-size:12px;color:#94a3b8;margin-bottom:16px}
+.board{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;padding-bottom:12px}
+.col{background:#1e293b;border-radius:12px;padding:10px;min-width:260px;flex:1}
+.col h2{font-size:13px;font-weight:800;margin-bottom:2px;display:flex;justify-content:space-between;align-items:center}
+.col .wip{font-size:10px;color:#94a3b8;font-weight:600}
+.list{margin-top:8px;display:flex;flex-direction:column;gap:8px;min-height:60px}
+.card{background:#f8fafc;color:#1e293b;border-radius:10px;padding:9px;box-shadow:0 2px 6px rgba(0,0,0,.3);border-left:4px solid #64748b}
+.card h3{font-size:12px;font-weight:700;line-height:1.35;margin-bottom:5px}
+.card ul{font-size:11px;color:#475569;padding-left:15px;line-height:1.5}
+.card .foot{display:flex;justify-content:space-between;align-items:center;margin-top:7px;flex-wrap:wrap;gap:4px}
+.tag{font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;background:#e2e8f0;color:#334155}
+.tag.admin{background:#7c2d12;color:#fff}
+.tag.vend{background:#fed7aa;color:#7c2d12}
+.tag.cli{background:#dbeafe;color:#1e3a8a}
+.pts{font-size:10px;font-weight:800;color:#b45309}
+.sprint{font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;background:#fef3c7;color:#92400e}
+.legend{background:#1e293b;padding:14px;border-radius:12px;margin-top:8px;font-size:12px;line-height:1.7}
+.legend b{color:#fcd34d}
+</style>
+</head>
+<body>
+<h1>📋 Gestión - ImportaChina</h1>
+<p class="sub">Tablero Kanban — 16 historias, 52 puntos, 4 sprints. Límites WIP: En Proceso 3, En Pruebas 2.</p>
+<div class="board" id="board"></div>
+<div class="legend">
+<b>Reglas del tablero:</b> Por Hacer (historias del sprint, alguien la toma) → En Proceso (tiene responsable y rama de Git, PR abierto; máx. 3) → En Pruebas (PR abierto, pasa pruebas y revisión de un compañero; máx. 2) → Hecho (cumple todos los criterios, se archiva al cerrar el sprint).<br>
+<b>Etiquetas:</b> <span class="tag admin">Administrador</span> <span class="tag vend">Vendedor</span> <span class="tag cli">Cliente</span> <span class="sprint">Sprint 1..4</span><br>
+<b>Definición de terminado:</b> código desplegado, pruebas superadas (compra 200, permisos 403) y verificado en móvil.
+</div>
+<script>
+const S = [
+  {
+    "n": 1,
+    "t": "Autenticación y roles",
+    "h": [
+      [
+        "HU-01",
+        "Cliente",
+        "registrarme con mi correo y una contraseña",
+        "poder comprar en la tienda",
+        3,
+        [
+          "El formulario valida correo único y contraseña de mínimo 8 caracteres.",
+          "Al registrarme, mi cuenta queda con el rol Cliente."
+        ]
+      ],
+      [
+        "HU-02",
+        "Cliente",
+        "iniciar y cerrar sesión",
+        "acceder a mi cuenta de forma segura",
+        2,
+        [
+          "Con credenciales correctas entro a mi cuenta; con incorrectas veo un mensaje de error claro.",
+          "Al cerrar sesión no puedo volver a las páginas privadas."
+        ]
+      ],
+      [
+        "HU-03",
+        "Administrador",
+        "gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente)",
+        "controlar quién accede a cada función",
+        5,
+        [
+          "Puedo listar, crear, editar y desactivar usuarios.",
+          "Un Vendedor o Cliente no puede entrar al panel de administración."
+        ]
+      ],
+      [
+        "HU-04",
+        "Cliente",
+        "editar mi perfil y mi dirección de envío",
+        "recibir mis pedidos en el lugar correcto",
+        2,
+        [
+          "Puedo cambiar mi nombre, teléfono y dirección.",
+          "Los cambios se guardan y se muestran al volver a entrar."
+        ]
+      ]
+    ]
+  },
+  {
+    "n": 2,
+    "t": "Catálogo y consumo de la API",
+    "h": [
+      [
+        "HU-05",
+        "Administrador",
+        "sincronizar productos desde la API de AliExpress",
+        "llenar el catálogo sin cargarlos uno por uno",
+        5,
+        [
+          "Al lanzar la sincronización se importan entre 20 y 50 productos con título, imagen y precio de costo.",
+          "Un producto ya importado no se duplica y cada sincronización queda registrada con su resultado."
+        ]
+      ],
+      [
+        "HU-06",
+        "Administrador",
+        "crear, editar y eliminar categorías",
+        "mantener el catálogo organizado",
+        2,
+        [
+          "Cada categoría tiene nombre único.",
+          "No puedo eliminar una categoría que tenga productos asignados."
+        ]
+      ],
+      [
+        "HU-07",
+        "Administrador",
+        "definir el margen de ganancia y ver el precio de venta de cada producto",
+        "que la tienda gane sobre el costo de importación",
+        2,
+        [
+          "El precio de venta se calcula a partir del costo y el margen.",
+          "Los cambios de margen se reflejan en el catálogo."
+        ]
+      ],
+      [
+        "HU-08",
+        "Cliente",
+        "ver el catálogo y el detalle de cada producto",
+        "conocer lo que está disponible antes de comprar",
+        3,
+        [
+          "El catálogo muestra imagen, título y precio, con paginación.",
+          "El detalle muestra descripción, imágenes y el botón para agregar al carrito."
+        ]
+      ],
+      [
+        "HU-09",
+        "Cliente",
+        "buscar productos por palabra clave y filtrarlos por categoría",
+        "encontrar lo que busco rápidamente",
+        3,
+        [
+          "La búsqueda devuelve productos cuyo título contiene la palabra.",
+          "Puedo combinar la búsqueda con una categoría y limpiar los filtros."
+        ]
+      ]
+    ]
+  },
+  {
+    "n": 3,
+    "t": "Carrito, pedidos y pagos",
+    "h": [
+      [
+        "HU-10",
+        "Cliente",
+        "agregar productos al carrito y modificar sus cantidades",
+        "preparar mi compra antes de pagar",
+        5,
+        [
+          "Puedo agregar, cambiar la cantidad y quitar productos.",
+          "El carrito muestra subtotales y total actualizados."
+        ]
+      ],
+      [
+        "HU-11",
+        "Cliente",
+        "confirmar mi compra con mi dirección de envío",
+        "generar mi pedido",
+        5,
+        [
+          "Al confirmar se crea un pedido con estado Pendiente y el carrito queda vacío.",
+          "Se guarda el precio de cada producto al momento de la compra."
+        ]
+      ],
+      [
+        "HU-12",
+        "Vendedor",
+        "ver la lista de pedidos y cambiar su estado",
+        "dar seguimiento a cada venta",
+        3,
+        [
+          "Veo los pedidos con cliente, total y estado.",
+          "Puedo cambiar el estado entre Pendiente, Pagado, Enviado y Entregado."
+        ]
+      ],
+      [
+        "HU-13",
+        "Vendedor",
+        "registrar el pago de un pedido",
+        "confirmar que la venta está cubierta",
+        2,
+        [
+          "Registro método, monto y fecha del pago.",
+          "Al registrar el pago, el pedido pasa a Pagado."
+        ]
+      ]
+    ]
+  },
+  {
+    "n": 4,
+    "t": "Reportes y publicación",
+    "h": [
+      [
+        "HU-14",
+        "Cliente",
+        "ver el historial de mis pedidos y su estado",
+        "saber en qué punto está cada compra",
+        3,
+        [
+          "Solo veo mis propios pedidos.",
+          "Cada pedido muestra fecha, productos, total y estado."
+        ]
+      ],
+      [
+        "HU-15",
+        "Vendedor",
+        "ver el detalle completo de un pedido",
+        "preparar el envío correctamente",
+        2,
+        [
+          "El detalle muestra productos, cantidades, dirección y datos de contacto.",
+          "Puedo volver a la lista sin perder los filtros."
+        ]
+      ],
+      [
+        "HU-16",
+        "Administrador",
+        "ver un reporte de ventas por rango de fechas y los productos más vendidos",
+        "tomar decisiones sobre el catálogo",
+        5,
+        [
+          "Puedo elegir fecha inicial y final y ver el total vendido.",
+          "Veo los 5 productos más vendidos del periodo."
+        ]
+      ]
+    ]
+  }
+];
+const L = [
+  { id: "backlog", n: "Backlog", wip: "sin límite" },
+  { id: "porhacer", n: "Por Hacer", wip: "selección del sprint" },
+  { id: "proceso", n: "En Proceso", wip: "límite 3" },
+  { id: "pruebas", n: "En Pruebas", wip: "límite 2" },
+  { id: "hecho", n: "Hecho", wip: "archivar al cerrar" }
+];
+// Historias ya completadas van directo a "hecho" del sprint 1-2 para mostrar avance
+const HECHOS = ["HU-01","HU-02","HU-04"];
+const EN_PROCESO = ["HU-08"];
+const board = document.getElementById("board");
+L.forEach(col => {
+  const c = document.createElement("div"); c.className = "col";
+  c.innerHTML = `<h2>${col.n}<span class="wip">${col.wip}</span></h2><div class="list"></div>`;
+  const list = c.querySelector(".list");
+  S.forEach(sp => sp.h.forEach(h => {
+    let destino = "backlog";
+    if (HECHOS.includes(h[0])) destino = "hecho";
+    else if (EN_PROCESO.includes(h[0])) destino = "proceso";
+    if (col.id === destino) {
+      const rol = h[1] === "Administrador" ? "admin" : h[1] === "Vendedor" ? "vend" : "cli";
+      const card = document.createElement("div");
+      card.className = "card";
+      card.style.borderLeftColor = rol === "admin" ? "#b45309" : rol === "vend" ? "#c2410c" : "#2563eb";
+      card.innerHTML = `<h3>Como ${h[1]}, quiero ${h[2]}, para ${h[3]}.</h3>
+        <ul>${h[5].map(c => "<li>" + c + "</li>").join("")}</ul>
+        <div class="foot"><span class="tag ${rol}">${h[1]}</span><span class="sprint">Sprint ${sp.n}</span><span class="pts">${h[4]} pts</span></div>`;
+      list.appendChild(card);
+    }
+  }));
+  board.appendChild(c);
+});
+</script>
+</body>
+</html>

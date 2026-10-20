@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logueado() { return request.auth != null; }
+    function miFicha() {
+      return logueado()
+        && exists(/databases/$(database)/documents/Usuarios/$(request.auth.uid))
+        && get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.Estado == 'aprobado';
+    }
+    function miRol() { return get(/databases/$(database)/documents/Usuarios/$(request.auth.uid)).data.RolUsuario; }
+    function esAdmin() { return miFicha() && miRol() == 'administrador'; }
+    function esVendedor() { return miFicha() && (miRol() == 'vendedor' || miRol() == 'administrador'); }
+    function esMiDoc(uid) { return logueado() && request.auth.uid == uid; }
+
+    // ===== ROLES =====
+    match /Roles/{doc} {
+      allow read: if logueado();
+      allow write: if esAdmin();
+    }
+
+    // ===== USUARIOS =====
+    match /Usuarios/{uid} {
+      // HU-01: registro libre, queda pendiente con rol Cliente
+      allow create: if esMiDoc(uid)
+        && request.resource.data.Estado == 'pendiente'
+        && request.resource.data.RolUsuario in ['cliente', 'vendedor', 'administrador']
+        && request.resource.data.CorreoUsuario is string;
+      allow get: if esMiDoc(uid) || esAdmin();
+      allow list: if esAdmin() || esVendedor();
+      // HU-03: solo admin gestiona usuarios y roles
+      allow update: if esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    // ===== CATEGORIAS (HU-06) =====
+    match /Categorias/{doc} {
+      allow read: if true;
+      allow create: if esAdmin();
+      allow update: if esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    // ===== PRODUCTOS (HU-05, HU-07, HU-08, HU-09) =====
+    match /Productos/{doc} {
+      allow read: if true;
+      allow create: if esAdmin();
+      allow update: if esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    // ===== CARRITOS (HU-10) =====
+    match /Carritos/{doc} {
+      allow read: if esMiDoc(doc) || esVendedor();
+      allow create: if logueado()
+        && request.resource.data.UsuarioId == request.auth.uid
+        && request.resource.data.Estado == 'activo';
+      allow update: if logueado() && resource.data.UsuarioId == request.auth.uid;
+      allow delete: if logueado() && resource.data.UsuarioId == request.auth.uid;
+    }
+
+    // ===== PEDIDOS (HU-11, HU-12, HU-14, HU-15) =====
+    match /Pedidos/{doc} {
+      // HU-11: el cliente crea su pedido con items embebidos
+      allow create: if logueado()
+        && request.resource.data.UsuarioId == request.auth.uid
+        && request.resource.data.Estado == 'pendiente'
+        && request.resource.data.items is list;
+      // HU-12: el vendedor cambia el estado
+      allow read: if miFicha() && (resource.data.UsuarioId == request.auth.uid || esVendedor());
+      allow list: if miFicha() && (esVendedor() || esAdmin());
+      allow update: if esVendedor();
+      allow delete: if esAdmin();
+    }
+
+    // ===== PAGOS (HU-13) =====
+    match /Pagos/{doc} {
+      allow read: if miFicha() && (esVendedor() || esAdmin());
+      allow create: if esVendedor();
+      allow update: if esVendedor();
+      allow delete: if esAdmin();
+    }
+
+    // ===== REGISTRO DE SINCRONIZACION (HU-05) =====
+    match /SyncLogs/{doc} {
+      allow read: if esAdmin();
+      allow create: if esAdmin();
+      allow update: if esAdmin();
+      allow delete: if esAdmin();
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}

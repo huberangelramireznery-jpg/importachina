@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImportaChina — Wireframes</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:#e8e8e8;padding:24px;color:#222}
+h1{font-size:22px;margin-bottom:4px}
+p.sub{font-size:13px;color:#555;margin-bottom:22px}
+.wf{margin-bottom:36px;background:#fff;padding:16px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.wf h2{font-size:15px;margin-bottom:4px}
+.wf .desc{font-size:12px;color:#666;margin-bottom:14px}
+.tit{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+.frame{background:#fff;border:2px solid #333;border-radius:8px;overflow:hidden}
+.bar{background:#f0f0f0;border-bottom:2px solid #333;padding:8px 10px;font-size:11px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.bar .dots{letter-spacing:2px}
+.body{padding:12px;min-height:230px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.box{border:1.5px dashed #888;border-radius:6px;padding:8px;color:#666;font-size:11px;background:#fafafa}
+.box h4{font-size:11px;color:#444;margin-bottom:3px}
+.btn{border:1.5px solid #333;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;background:#e8e8e8}
+.btn.p{background:#333;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.card{border:1.5px solid #444;border-radius:8px;overflow:hidden}
+.img{height:70px;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:26px}
+.card .b{padding:7px}
+.ln{height:7px;background:#ddd;border-radius:3px;margin-bottom:5px}
+.ln.w60{width:60%}.ln.w40{width:40%}.ln.w80{width:80%}
+.mobile{width:200px}
+.mobile .body{min-height:330px;padding:9px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.mcard{border:1.5px solid #444;border-radius:6px;overflow:hidden}
+.mcard .img{height:48px;font-size:18px}
+.mcard .b{padding:5px}
+.cap{font-size:11px;color:#555;margin-top:6px;text-align:center}
+.legend{background:#fff;padding:14px;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,.15);margin-top:8px}
+.legend h3{font-size:14px;margin-bottom:6px}
+.legend td{font-size:12px;padding:4px 8px;border-bottom:1px solid #eee}
+</style>
+</head>
+<body>
+<h1>ImportaChina — Wireframes (media fidelidad)</h1>
+<p class="sub">Recrear en Figma siguiendo estas estructuras. Cada bloque indica el componente y su comportamiento esperado.</p>
+
+<!-- 1. CATÁLOGO -->
+<div class="wf">
+<h2>WF-01. Catálogo de productos importados</h2>
+<p class="desc">Objetivo: el cliente explora el catálogo, filtra y busca (HU-08, HU-09). Incluye buscador, filtro por categoría, grilla con imagen, título y precio, y paginación.</p>
+<div class="tit">
+<div>
+<div class="frame">
+<div class="bar"><span>🛒 ImportaChina</span><span class="dots">● ● ●</span></div>
+<div class="body">
+<div class="row">
+<div class="box" style="flex:1"><h4>Buscador</h4>⌕ buscar productos...</div>
+<div class="box" style="width:130px"><h4>Filtro</h4>▾ Categoría</div>
+<div class="btn">Limpiar</div>
+</div>
+<div class="grid">
+<div class="card"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between;margin-top:4px"><b style="font-size:11px">Bs 18.50</b><span class="btn p">Ver</span></div></div></div>
+<div class="card"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between;margin-top:4px"><b style="font-size:11px">Bs 22.00</b><span class="btn p">Ver</span></div></div></div>
+<div class="card"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between;margin-top:4px"><b style="font-size:11px">Bs 14.00</b><span class="btn p">Ver</span></div></div></div>
+<div class="card"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between;margin-top:4px"><b style="font-size:11px">Bs 58.00</b><span class="btn p">Ver</span></div></div></div>
+</div>
+<div class="row" style="justify-content:center;margin-top:10px"><span class="btn">←</span><span class="btn p">1</span><span class="btn">2</span><span class="btn">→</span></div>
+</div>
+</div>
+<div class="cap">Escritorio — 4 columnas, 8 productos por página</div>
+
+<div class="frame mobile">
+<div class="bar"><span>☰ 🛒</span><span class="dots">●</span></div>
+<div class="body">
+<div class="row"><div class="box" style="flex:1"><h4>Buscar</h4>⌕</div><div class="box" style="width:52px"><h4>Filtro</h4>▾</div></div>
+<div class="mgrid">
+<div class="mcard"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between"><b style="font-size:9px">Bs 18.50</b><span class="btn p">Ver</span></div></div></div>
+<div class="mcard"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between"><b style="font-size:9px">Bs 22.00</b><span class="btn p">Ver</span></div></div></div>
+<div class="mcard"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between"><b style="font-size:9px">Bs 14.00</b><span class="btn p">Ver</span></div></div></div>
+<div class="mcard"><div class="img">📦</div><div class="b"><div class="ln w80"></div><div class="ln w40"></div><div class="row" style="justify-content:space-between"><b style="font-size:9px">Bs 58.00</b><span class="btn p">Ver</span></div></div></div>
+</div>
+<div class="row" style="justify-content:center;margin-top:8px"><span class="btn">←</span><span class="btn p">1</span><span class="btn">→</span></div>
+</div>
+</div>
+<div class="cap">Móvil — 2 columnas</div>
+</div>
+</div>
+
+<!-- 2. DETALLE -->
+<div class="wf">
+<h2>WF-02. Detalle del producto</h2>
+<p class="desc">Objetivo: el cliente conoce el producto y lo agrega al carrito (HU-08, HU-10). Muestra galería de imágenes, descripción, costo, margen, precio de venta, stock y botón de compra.</p>
+<div class="tit">
+<div>
+<div class="frame">
+<div class="bar"><span>← 🛒 ImportaChina</span><span class="dots">● ● ●</span></div>
+<div class="body">
+<div class="row" style="align-items:flex-start;gap:14px">
+<div style="width:45%">
+<div class="box" style="height:150px;display:flex;align-items:center;justify-content:center;font-size:44px">📦</div>
+<div class="row" style="margin-top:6px"><div class="box" style="width:38px;height:30px"></div><div class="box" style="width:38px;height:30px"></div><div class="box" style="width:38px;height:30px"></div></div>
+</div>
+<div style="flex:1">
+<div class="ln w40"></div>
+<h3 style="font-size:14px;margin:4px 0">Audífonos Bluetooth TWS</h3>
+<div class="ln w80"></div><div class="ln w80"></div><div class="ln w60"></div>
+<div class="box" style="margin-top:8px"><h4>Precio de venta</h4><b style="font-size:15px">Bs 11.05</b> <span style="font-size:10px">· Costo Bs 8.50 · Margen 30%</span></div>
+<div style="font-size:11px;margin:6px 0">Stock disponible: <b>60</b></div>
+<div class="btn p" style="width:100%;text-align:center;padding:8px">🛒 Agregar al carrito</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cap">Escritorio — imagen a la izquierda, ficha a la derecha</div>
+
+<div class="frame mobile">
+<div class="bar"><span>←</span><span class="dots">●</span></div>
+<div class="body">
+<div class="box" style="height:110px;display:flex;align-items:center;justify-content:center;font-size:34px">📦</div>
+<div class="row" style="margin-top:6px"><div class="box" style="width:30px;height:22px"></div><div class="box" style="width:30px;height:22px"></div><div class="box" style="width:30px;height:22px"></div></div>
+<div class="ln w60" style="margin-top:8px"></div>
+<h3 style="font-size:12px;margin:4px 0">Audífonos Bluetooth TWS</h3>
+<div class="ln w80"></div><div class="ln w80"></div>
+<div class="box" style="margin-top:6px"><b style="font-size:13px">Bs 11.05</b></div>
+<div style="font-size:10px;margin:5px 0">Stock: <b>60</b></div>
+<div class="btn p" style="width:100%;text-align:center;padding:7px">🛒 Agregar al carrito</div>
+</div>
+</div>
+<div class="cap">Móvil — bloques apilados</div>
+</div>
+</div>
+
+<!-- 3. REGLAS -->
+<div class="legend">
+<h3>Componentes y comportamiento esperados</h3>
+<table style="width:100%">
+<tr><td><b>Barra de navegación</b></td><td>Logo, Catálogo, Carrito con contador, Mis pedidos, Panel (según rol), Perfil, Salir</td></tr>
+<tr><td><b>Buscador</b></td><td>Filtra por título mientras se escribe; combinable con el filtro de categoría</td></tr>
+<tr><td><b>Filtro de categoría</b></td><td>Lista desplegable con “Todas las categorías” + botón Limpiar</td></tr>
+<tr><td><b>Tarjeta de producto</b></td><td>Imagen, título, categoría, precio de venta y botón Ver</td></tr>
+<tr><td><b>Paginación</b></td><td>8 productos por página con anterior / número / siguiente</td></tr>
+<tr><td><b>Galería</b></td><td>Imagen principal y miniaturas seleccionables</td></tr>
+<tr><td><b>Ficha de precio</b></td><td>Precio de venta, costo de importación y margen aplicado</td></tr>
+<tr><td><b>Botón agregar</b></td><td>Se deshabilita si no hay stock; al pulsarlo suma al carrito y actualiza el contador</td></tr>
+</table>
+</div>
+
+</body>
+</html>
