@@ -1,4 +1,0 @@
-Sprint 0: credenciales de prueba y verificacion del flujo
-- Cuenta vendedor@importachina.bo / Vendedor12345 (rol vendedor, aprobado)
-- Prueba de flujo completo: cliente crea pedido con precio congelado, vendedor cambia estado a pagado y registra el pago, admin ve pagos y pedidos
-- Verificacion de permisos: el cliente recibe 403 al listar pedidos globales

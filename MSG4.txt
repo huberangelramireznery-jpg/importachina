@@ -1,0 +1,4 @@
+Sprint 0: tablero Kanban en Markdown
+- BACKLOG.md reescrito como tablero Kanban (columnas Hecho, En Proceso, Por hacer)
+- Cada historia enlazada a su Issue con criterios de aceptacion
+- Plan de sprints, reglas WIP, definicion de terminado, etiquetas y cuentas de prueba

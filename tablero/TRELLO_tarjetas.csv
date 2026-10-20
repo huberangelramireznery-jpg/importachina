@@ -1,0 +1,65 @@
+﻿"Título","Descripción (criterios de aceptación)","Etiquetas","Puntos","Sprint","Lista"
+"Como Cliente, quiero registrarme con mi correo y una contraseña, para poder comprar en la tienda.","• El formulario valida correo único y contraseña de mínimo 8 caracteres.
+• Al registrarme, mi cuenta queda con el rol Cliente.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 1","3","Sprint 1 — Autenticación y roles","Backlog"
+"Como Cliente, quiero iniciar y cerrar sesión, para acceder a mi cuenta de forma segura.","• Con credenciales correctas entro a mi cuenta; con incorrectas veo un mensaje de error claro.
+• Al cerrar sesión no puedo volver a las páginas privadas.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 1","2","Sprint 1 — Autenticación y roles","Backlog"
+"Como Administrador, quiero gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente), para controlar quién accede a cada función.","• Puedo listar, crear, editar y desactivar usuarios.
+• Un Vendedor o Cliente no puede entrar al panel de administración.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Administrador, Sprint 1","5","Sprint 1 — Autenticación y roles","Backlog"
+"Como Cliente, quiero editar mi perfil y mi dirección de envío, para recibir mis pedidos en el lugar correcto.","• Puedo cambiar mi nombre, teléfono y dirección.
+• Los cambios se guardan y se muestran al volver a entrar.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 1","2","Sprint 1 — Autenticación y roles","Backlog"
+"Como Administrador, quiero sincronizar productos desde la API de AliExpress, para llenar el catálogo sin cargarlos uno por uno.","• Al lanzar la sincronización se importan entre 20 y 50 productos con título, imagen y precio de costo.
+• Un producto ya importado no se duplica y cada sincronización queda registrada con su resultado.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Administrador, Sprint 2","5","Sprint 2 — Catálogo y consumo de la API","Backlog"
+"Como Administrador, quiero crear, editar y eliminar categorías, para mantener el catálogo organizado.","• Cada categoría tiene nombre único.
+• No puedo eliminar una categoría que tenga productos asignados.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Administrador, Sprint 2","2","Sprint 2 — Catálogo y consumo de la API","Backlog"
+"Como Administrador, quiero definir el margen de ganancia y ver el precio de venta de cada producto, para que la tienda gane sobre el costo de importación.","• El precio de venta se calcula a partir del costo y el margen.
+• Los cambios de margen se reflejan en el catálogo.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Administrador, Sprint 2","2","Sprint 2 — Catálogo y consumo de la API","Backlog"
+"Como Cliente, quiero ver el catálogo y el detalle de cada producto, para conocer lo que está disponible antes de comprar.","• El catálogo muestra imagen, título y precio, con paginación.
+• El detalle muestra descripción, imágenes y el botón para agregar al carrito.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 2","3","Sprint 2 — Catálogo y consumo de la API","Backlog"
+"Como Cliente, quiero buscar productos por palabra clave y filtrarlos por categoría, para encontrar lo que busco rápidamente.","• La búsqueda devuelve productos cuyo título contiene la palabra.
+• Puedo combinar la búsqueda con una categoría y limpiar los filtros.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 2","3","Sprint 2 — Catálogo y consumo de la API","Backlog"
+"Como Cliente, quiero agregar productos al carrito y modificar sus cantidades, para preparar mi compra antes de pagar.","• Puedo agregar, cambiar la cantidad y quitar productos.
+• El carrito muestra subtotales y total actualizados.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 3","5","Sprint 3 — Carrito, pedidos y pagos","Por Hacer"
+"Como Cliente, quiero confirmar mi compra con mi dirección de envío, para generar mi pedido.","• Al confirmar se crea un pedido con estado Pendiente y el carrito queda vacío.
+• Se guarda el precio de cada producto al momento de la compra.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 3","5","Sprint 3 — Carrito, pedidos y pagos","Por Hacer"
+"Como Vendedor, quiero ver la lista de pedidos y cambiar su estado, para dar seguimiento a cada venta.","• Veo los pedidos con cliente, total y estado.
+• Puedo cambiar el estado entre Pendiente, Pagado, Enviado y Entregado.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Vendedor, Sprint 3","3","Sprint 3 — Carrito, pedidos y pagos","Por Hacer"
+"Como Vendedor, quiero registrar el pago de un pedido, para confirmar que la venta está cubierta.","• Registro método, monto y fecha del pago.
+• Al registrar el pago, el pedido pasa a Pagado.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Vendedor, Sprint 3","2","Sprint 3 — Carrito, pedidos y pagos","Por Hacer"
+"Como Cliente, quiero ver el historial de mis pedidos y su estado, para saber en qué punto está cada compra.","• Solo veo mis propios pedidos.
+• Cada pedido muestra fecha, productos, total y estado.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Cliente, Sprint 4","3","Sprint 4 — Reportes y publicación","Por Hacer"
+"Como Vendedor, quiero ver el detalle completo de un pedido, para preparar el envío correctamente.","• El detalle muestra productos, cantidades, dirección y datos de contacto.
+• Puedo volver a la lista sin perder los filtros.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Vendedor, Sprint 4","2","Sprint 4 — Reportes y publicación","Por Hacer"
+"Como Administrador, quiero ver un reporte de ventas por rango de fechas y los productos más vendidos, para tomar decisiones sobre el catálogo.","• Puedo elegir fecha inicial y final y ver el total vendido.
+• Veo los 5 productos más vendidos del periodo.
+
+Subtareas: migración, modelo, controlador, vista, prueba.","Administrador, Sprint 4","5","Sprint 4 — Reportes y publicación","Por Hacer"

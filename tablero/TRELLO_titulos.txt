@@ -1,0 +1,16 @@
+Como Cliente, quiero registrarme con mi correo y una contraseña, para poder comprar en la tienda.
+Como Cliente, quiero iniciar y cerrar sesión, para acceder a mi cuenta de forma segura.
+Como Administrador, quiero gestionar usuarios y asignarles un rol (Administrador, Vendedor o Cliente), para controlar quién accede a cada función.
+Como Cliente, quiero editar mi perfil y mi dirección de envío, para recibir mis pedidos en el lugar correcto.
+Como Administrador, quiero sincronizar productos desde la API de AliExpress, para llenar el catálogo sin cargarlos uno por uno.
+Como Administrador, quiero crear, editar y eliminar categorías, para mantener el catálogo organizado.
+Como Administrador, quiero definir el margen de ganancia y ver el precio de venta de cada producto, para que la tienda gane sobre el costo de importación.
+Como Cliente, quiero ver el catálogo y el detalle de cada producto, para conocer lo que está disponible antes de comprar.
+Como Cliente, quiero buscar productos por palabra clave y filtrarlos por categoría, para encontrar lo que busco rápidamente.
+Como Cliente, quiero agregar productos al carrito y modificar sus cantidades, para preparar mi compra antes de pagar.
+Como Cliente, quiero confirmar mi compra con mi dirección de envío, para generar mi pedido.
+Como Vendedor, quiero ver la lista de pedidos y cambiar su estado, para dar seguimiento a cada venta.
+Como Vendedor, quiero registrar el pago de un pedido, para confirmar que la venta está cubierta.
+Como Cliente, quiero ver el historial de mis pedidos y su estado, para saber en qué punto está cada compra.
+Como Vendedor, quiero ver el detalle completo de un pedido, para preparar el envío correctamente.
+Como Administrador, quiero ver un reporte de ventas por rango de fechas y los productos más vendidos, para tomar decisiones sobre el catálogo.
