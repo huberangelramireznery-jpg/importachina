@@ -158,8 +158,13 @@
 </div>
 
 <div class="ptabview space-y-4" id="p-usuarios" hidden>
+<div class="bg-white rounded-3xl p-5 shadow" style="border:2px solid #f59e0b">
+<h3 class="font-black text-orange-900 mb-1">⏳ Cuentas pendientes de aceptar</h3>
+<p class="text-xs font-semibold text-amber-800 mb-3">Estas cuentas se registran solas en el login. Apruébalas para que puedan entrar al sistema.</p>
+<div id="tbPendientes" class="space-y-2"></div>
+</div>
 <div class="bg-white rounded-3xl p-5 shadow overflow-x-auto">
-<h3 class="font-black text-orange-900 mb-3">Usuarios</h3>
+<h3 class="font-black text-orange-900 mb-3">Todos los usuarios</h3>
 <table class="w-full text-sm"><thead><tr class="text-amber-800"><th class="text-left p-2">Correo</th><th class="text-left p-2">Rol</th><th class="text-left p-2">Estado</th><th class="p-2">Acciones</th></tr></thead><tbody id="tbUsuarios"></tbody></table>
 </div>
 </div>
@@ -180,6 +185,8 @@
 <div><label class="block text-xs font-black text-orange-800 mb-1">Desde</label><input id="rpDesde" type="date" class="p-2.5 rounded-xl border-2 border-amber-300"></div>
 <div><label class="block text-xs font-black text-orange-800 mb-1">Hasta</label><input id="rpHasta" type="date" class="p-2.5 rounded-xl border-2 border-amber-300"></div>
 <button id="btnReporte" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#c2410c">Calcular</button>
+<button id="btnRepExcel" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#15803d">📊 Excel</button>
+<button id="btnRepPDF" class="px-5 py-2.5 rounded-xl text-white font-black" style="background:#dc2626">📄 PDF</button>
 </div>
 <div id="repOut" class="mt-4"></div>
 </div>
@@ -550,6 +557,35 @@ async function registrarPago(p){
 }
 function renderTablaUsuarios(){
   const tb = document.getElementById("tbUsuarios"); if (!tb) return;
+  // --- pendientes (solo admin) ---
+  const pb = document.getElementById("tbPendientes");
+  if (pb) {
+    pb.innerHTML = "";
+    const pend = usuarios.filter(u => u.Estado === "pendiente");
+    if (!pend.length) pb.innerHTML = `<p class="text-sm font-bold text-stone-500">No hay cuentas pendientes.</p>`;
+    pend.forEach(u => {
+      const row = document.createElement("div");
+      row.className = "flex items-center justify-between gap-2 p-2 rounded-xl flex-wrap";
+      row.style.cssText = "background:#fffbeb;border:1px solid #fde68a";
+      const info = document.createElement("span");
+      info.className = "text-sm font-bold";
+      info.textContent = `${u.CorreoUsuario || ""} — registrado como ${u.RolUsuario || "cliente"}`;
+      const box = document.createElement("span");
+      const ok = document.createElement("button");
+      ok.textContent = "✓ Aceptar";
+      ok.className = "px-3 py-1.5 rounded-lg text-white font-black text-xs";
+      ok.style.background = "#16a34a";
+      ok.onclick = async () => { await updateDoc(doc(db, "Usuarios", u.id), { Estado: "aprobado" }); alert("Cuenta aprobada: " + u.CorreoUsuario); };
+      const no = document.createElement("button");
+      no.textContent = "✕ Rechazar";
+      no.className = "px-3 py-1.5 rounded-lg text-white font-black text-xs ml-2";
+      no.style.background = "#dc2626";
+      no.onclick = async () => { if (confirm("¿Rechazar la cuenta de " + u.CorreoUsuario + "?")) await updateDoc(doc(db, "Usuarios", u.id), { Estado: "rechazado" }); };
+      box.append(ok, no);
+      row.append(info, box);
+      pb.appendChild(row);
+    });
+  }
   tb.innerHTML = "";
   usuarios.forEach(u => {
     const tr = document.createElement("tr");
@@ -642,6 +678,143 @@ function renderReporte(){
     <h4 class="font-black text-orange-900 mb-1">Top 5 productos vendidos</h4>
     <ol class="text-sm list-decimal list-inside">${top.map(([n, c]) => `<li>${n} — ${c} unidades</li>`).join("") || "<li>Sin ventas en el periodo</li>"}</ol>`;
 }
+/* ---------- EXPORTAR REPORTE: EXCEL Y PDF ---------- */
+function datosReporte(){
+  const d = document.getElementById("rpDesde").value, h = document.getElementById("rpHasta").value;
+  const desde = d ? new Date(d + "T00:00:00").getTime() : 0;
+  const hasta = h ? new Date(h + "T23:59:59").getTime() : Date.now() + 864e5;
+  const enRango = pedidos.filter(p => {
+    const t = p.createdAt?.seconds ? p.createdAt.seconds * 1000 : 0;
+    return t >= desde && t <= hasta && p.Estado !== "cancelado";
+  });
+  const total = enRango.reduce((a, p) => a + Number(p.Total || 0), 0);
+  const conteo = {};
+  enRango.forEach(p => (p.items || []).forEach(i => { conteo[i.nombre] = (conteo[i.nombre] || 0) + Number(i.cantidad || 0); }));
+  const top = Object.entries(conteo).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  return { enRango, total, top, desde: d || "inicio", hasta: h || "hoy" };
+}
+function fmtBO(iso){
+  try { return new Date(iso).toLocaleString("es-BO", { timeZone: "America/La_Paz", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
+  catch(e) { return "-"; }
+}
+document.getElementById("btnRepExcel").onclick = async () => {
+  try {
+    if (!window.ExcelJS) return alert("ExcelJS no cargó (internet).");
+    const r = datosReporte();
+    const wb = new window.ExcelJS.Workbook();
+    wb.creator = "ImportaChina";
+    const fill = (c) => ({ type: "pattern", pattern: "solid", fgColor: { argb: c } });
+    const thin = { top: { style: "thin", color: { argb: "FFE7E5E4" } }, left: { style: "thin", color: { argb: "FFE7E5E4" } }, bottom: { style: "thin", color: { argb: "FFE7E5E4" } }, right: { style: "thin", color: { argb: "FFE7E5E4" } } };
+    // Hoja resumen
+    const s0 = wb.addWorksheet("Resumen");
+    s0.mergeCells("A1:B1");
+    s0.getCell("A1").value = "🛒 ImportaChina — Reporte de ventas";
+    s0.getCell("A1").font = { bold: true, size: 14, color: { argb: "FF881337" } };
+    s0.getCell("A1").alignment = { horizontal: "center" };
+    s0.addRow(["Periodo", `${r.desde} a ${r.hasta}`]);
+    s0.addRow(["Total vendido (Bs)", r.total]).getCell(2).numFmt = '#,##0.00';
+    s0.addRow(["Pedidos", r.enRango.length]);
+    s0.addRow(["Productos más vendidos", r.top.length]);
+    const hr = s0.addRow(["Producto", "Unidades"]);
+    hr.eachCell(c => { c.fill = fill("FF881337"); c.font = { bold: true, color: { argb: "FFFFFFFF" } }; c.border = thin; });
+    r.top.forEach(([n, c], i) => {
+      const row = s0.addRow([n, c]);
+      if (i % 2 === 0) row.eachCell(cc => { cc.fill = fill("FFFFF7ED"); });
+    });
+    s0.columns = [{ width: 30 }, { width: 18 }];
+    // Hoja pedidos
+    const s1 = wb.addWorksheet("Pedidos");
+    s1.mergeCells("A1:F1");
+    s1.getCell("A1").value = "🛒 ImportaChina — Detalle de pedidos";
+    s1.getCell("A1").font = { bold: true, size: 14, color: { argb: "FF881337" } };
+    s1.getCell("A1").alignment = { horizontal: "center" };
+    const h1 = s1.addRow(["Fecha", "Cliente", "Teléfono", "Dirección", "Total (Bs)", "Estado"]);
+    h1.eachCell(c => { c.fill = fill("FF881337"); c.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 }; c.border = thin; c.alignment = { horizontal: "center", vertical: "middle" }; });
+    h1.height = 22;
+    r.enRango.forEach((p, i) => {
+      const row = s1.addRow([
+        fmtBO(p.createdAt?.seconds ? p.createdAt.seconds * 1000 : Date.now()),
+        p.ClienteNombre || "", p.ClienteTelefono || "", p.DireccionEnvio || "",
+        Number(p.Total || 0), p.Estado || ""
+      ]);
+      row.eachCell(c => { c.border = thin; c.alignment = { vertical: "middle", horizontal: "center" }; });
+      if (i % 2 === 0) row.eachCell(c => { c.fill = fill("FFFFF7ED"); });
+    });
+    s1.columns = [{ width: 20 }, { width: 26 }, { width: 16 }, { width: 30 }, { width: 14 }, { width: 14 }];
+    s1.getColumn(5).numFmt = '#,##0.00';
+    const tot = s1.addRow(["", "", "", "TOTAL", r.total, ""]);
+    tot.eachCell(c => { c.font = { bold: true, size: 12 }; c.fill = fill("FFFDE68A"); c.border = thin; c.alignment = { horizontal: "center" }; });
+    tot.getCell(5).numFmt = '#,##0.00';
+    // Hoja productos
+    const s2 = wb.addWorksheet("Productos");
+    s2.mergeCells("A1:C1");
+    s2.getCell("A1").value = "🛒 ImportaChina — Productos vendidos";
+    s2.getCell("A1").font = { bold: true, size: 14, color: { argb: "FF881337" } };
+    s2.getCell("A1").alignment = { horizontal: "center" };
+    const h2 = s2.addRow(["Producto", "Unidades", "Ingresos (Bs)"]);
+    h2.eachCell(c => { c.fill = fill("FF15803D"); c.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 }; c.border = thin; c.alignment = { horizontal: "center", vertical: "middle" }; });
+    h2.height = 22;
+    const prod = {};
+    r.enRango.forEach(p => (p.items || []).forEach(i => {
+      prod[i.nombre] = prod[i.nombre] || { u: 0, b: 0 };
+      prod[i.nombre].u += Number(i.cantidad || 0);
+      prod[i.nombre].b += Number(i.subtotal || 0);
+    }));
+    Object.entries(prod).sort((a, b) => b[1].b - a[1].b).forEach(([n, v], i) => {
+      const row = s2.addRow([n, v.u, v.b]);
+      row.eachCell(c => { c.border = thin; c.alignment = { vertical: "middle", horizontal: "center" }; });
+      if (i % 2 === 0) row.eachCell(c => { c.fill = fill("FFF0FDF4"); });
+    });
+    s2.columns = [{ width: 34 }, { width: 12 }, { width: 16 }];
+    s2.getColumn(3).numFmt = '#,##0.00';
+    const buf = await wb.xlsx.writeBuffer();
+    const u = URL.createObjectURL(new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    const l = document.createElement("a"); l.href = u; l.download = "reporte-importachina.xlsx"; l.click();
+    setTimeout(() => URL.revokeObjectURL(u), 3000);
+  } catch(e) { console.error(e); alert("Error Excel: " + e.message); }
+};
+document.getElementById("btnRepPDF").onclick = () => {
+  const r = datosReporte();
+  const filasPed = r.enRango.map(p => `<tr><td>${fmtBO(p.createdAt?.seconds ? p.createdAt.seconds * 1000 : Date.now())}</td><td>${p.ClienteNombre || ""}</td><td>${p.ClienteTelefono || ""}</td><td>${Number(p.Total || 0).toFixed(2)}</td><td>${p.Estado || ""}</td></tr>`).join("");
+  const filasTop = r.top.map(([n, c], i) => `<tr><td>${i + 1}</td><td>${n}</td><td>${c}</td></tr>`).join("");
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte ImportaChina</title>
+  <style>
+  body{font-family:Arial,sans-serif;color:#1f2937;padding:24px;font-size:12px}
+  h1{color:#881337;font-size:20px;margin:0 0 2px}
+  .sub{color:#9f1239;font-size:11px;margin-bottom:14px}
+  .kpis{display:flex;gap:10px;margin-bottom:16px}
+  .kpi{flex:1;border:2px solid #fca5a5;border-radius:10px;padding:10px;text-align:center;background:#fff7ed}
+  .kpi b{display:block;font-size:20px;color:#c2410c}
+  .kpi span{font-size:10px;text-transform:uppercase;color:#9f1239;font-weight:bold}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  th{background:#881337;color:#fff;padding:7px;text-align:left;font-size:11px}
+  td{border:1px solid #e7e5e4;padding:6px}
+  tr:nth-child(even) td{background:#fff7ed}
+  tfoot td{background:#fde68a;font-weight:bold}
+  h2{color:#881337;font-size:14px;margin:12px 0 6px}
+  .foot{margin-top:18px;border-top:1px solid #e7e5e4;padding-top:8px;font-size:10px;color:#6b7280}
+  @media print{body{padding:0}}
+  </style></head><body>
+  <h1>🛒 ImportaChina — Reporte de ventas</h1>
+  <div class="sub">Periodo: ${r.desde} a ${r.hasta} • Generado: ${fmtBO(Date.now())} (hora boliviana)</div>
+  <div class="kpis">
+    <div class="kpi"><span>Total vendido</span><b>Bs ${r.total.toFixed(2)}</b></div>
+    <div class="kpi"><span>Pedidos</span><b>${r.enRango.length}</b></div>
+    <div class="kpi"><span>Productos top</span><b>${r.top.length}</b></div>
+  </div>
+  <h2>Detalle de pedidos</h2>
+  <table><thead><tr><th>Fecha</th><th>Cliente</th><th>Teléfono</th><th>Total (Bs)</th><th>Estado</th></tr></thead>
+  <tbody>${filasPed || '<tr><td colspan="5">Sin pedidos en el periodo</td></tr>'}</tbody>
+  <tfoot><tr><td colspan="3">TOTAL</td><td>${r.total.toFixed(2)}</td><td></td></tr></tfoot></table>
+  <h2>Top 5 productos vendidos</h2>
+  <table><thead><tr><th>#</th><th>Producto</th><th>Unidades</th></tr></thead>
+  <tbody>${filasTop || '<tr><td colspan="3">Sin ventas en el periodo</td></tr>'}</tbody></table>
+  <div class="foot">ImportaChina — Sistema web de comercio electrónico (Firebase) • ${new Date().toLocaleString("es-BO")}</div>
+  <script>window.onload=()=>setTimeout(()=>window.print(),400);<\/script></body></html>`;
+  const w = window.open("", "_blank", "width=900,height=1000");
+  if (!w) return alert("Permite ventanas emergentes para generar el PDF");
+  w.document.write(html); w.document.close();
+};
 renderCarrito(); guardarCarrito();
 </script>
 </body>
