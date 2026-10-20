@@ -1,5 +1,0 @@
-Sprint 0: historias de usuario en GitHub
-- 16 archivos Markdown en historias-de-usuario/ (una por historia)
-- BACKLOG.md con plan de sprints, tabla resumen, reglas Kanban y DoD
-- crear-issues.js para publicar las 16 historias como Issues de GitHub
-- Etiquetas por rol (Administrador, Vendedor, Cliente) y por sprint
